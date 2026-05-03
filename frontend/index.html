@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizForge — Learn. Test. Grow.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c27;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6b9d;
+      --accent3: #00d4aa;
+      --text: #f0f0f8;
+      --text-muted: #7a7a9a;
+      --error: #ff5b5b;
+      --success: #00d4aa;
+      --radius: 16px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ─────────────────────────────────────── */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.12;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    .orb1 { width: 600px; height: 600px; background: var(--accent); top: -200px; left: -200px; }
+    .orb2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; right: -100px; animation-delay: -10s; }
+    .orb3 { width: 300px; height: 300px; background: var(--accent3); top: 50%; left: 50%; animation-delay: -5s; }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, -40px) scale(1.1); } }
+
+    /* ── LAYOUT ─────────────────────────────────────────── */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── LEFT PANEL ─────────────────────────────────────── */
+    .hero {
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(108,99,255,0.08) 0%, transparent 60%);
+      border-right: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 80px;
+    }
+    .logo span { color: var(--accent); }
+
+    .hero-headline {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(40px, 4vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+    }
+    .hero-headline .line2 { color: var(--accent); }
+
+    .hero-sub {
+      color: var(--text-muted);
+      font-size: 18px;
+      line-height: 1.7;
+      margin-bottom: 60px;
+      max-width: 420px;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .pill-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ── RIGHT PANEL ────────────────────────────────────── */
+    .auth-panel {
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .auth-box {
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 40px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.25s ease;
+    }
+    .auth-tab.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    input, select {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+    }
+    input::placeholder { color: var(--text-muted); }
+    select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237a7a9a'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 20px; padding-right: 44px; }
+    select option { background: var(--surface2); }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .role-card {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      background: var(--surface);
+      user-select: none;
+    }
+    .role-card:hover { border-color: var(--accent); }
+    .role-card.selected { border-color: var(--accent); background: rgba(108,99,255,0.1); }
+    .role-card .role-icon { font-size: 28px; margin-bottom: 8px; }
+    .role-card .role-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+    .role-card .role-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    input[type="hidden"] {}
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover { background: #5a52e8; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(108,99,255,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-primary .spinner { display: none; width: 18px; height: 18px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+    .btn-primary.loading .btn-text { display: none; }
+    .btn-primary.loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideIn 0.2s ease;
+    }
+    .alert.show { display: flex; align-items: center; gap: 10px; }
+    .alert-error { background: rgba(255,91,91,0.12); border: 1px solid rgba(255,91,91,0.3); color: #ff8080; }
+    .alert-success { background: rgba(0,212,170,0.12); border: 1px solid rgba(0,212,170,0.3); color: var(--success); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-footer { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 14px; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .hero { display: none; }
+      .auth-panel { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<div class="page">
+  <!-- LEFT: Hero Panel -->
+  <div class="hero">
+    <div class="logo">Quiz<span>Forge</span></div>
+    <h1 class="hero-headline">
+      Knowledge<br>
+      <span class="line2">Forged Here.</span>
+    </h1>
+    <p class="hero-sub">An intelligent quiz platform for teachers to craft assessments and students to sharpen their minds.</p>
+    <div class="feature-pills">
+      <div class="pill"><div class="pill-icon">🎯</div>Role-based access for teachers & students</div>
+      <div class="pill"><div class="pill-icon">📊</div>Real-time result analytics & tracking</div>
+      <div class="pill"><div class="pill-icon">🔒</div>Secure JWT authentication & MySQL storage</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Auth Panel -->
+  <div class="auth-panel">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <div id="alertBox" class="alert"></div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
+          <span class="btn-text">Sign In →</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="form-footer">Don't have an account? <a href="#" onclick="switchTab('signup')" style="color:var(--accent)">Sign up</a></div>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signupForm" style="display:none">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signupName" placeholder="Your full name" autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label>I am a...</label>
+          <div class="role-grid">
+            <div class="role-card selected" id="roleStudent" onclick="selectRole('student')">
+              <div class="role-icon">🎓</div>
+              <div class="role-name">Student</div>
+              <div class="role-desc">Take quizzes & track progress</div>
+            </div>
+            <div class="role-card" id="roleTeacher" onclick="selectRole('teacher')">
+              <div class="role-icon">🏫</div>
+              <div class="role-name">Teacher</div>
+              <div class="role-desc">Create quizzes & view results</div>
+            </div>
+          </div>
+          <input type="hidden" id="selectedRole" value="student" />
+        </div>
+        <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
+          <span class="btn-text">Create Account →</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="form-footer">Already have an account? <a href="#" onclick="switchTab('login')" style="color:var(--accent)">Sign in</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '/api';
+
+  // ── Check if already logged in ────────────────────────────────
+  (function() {
+    const token = localStorage.getItem('qf_token');
+    const user = JSON.parse(localStorage.getItem('qf_user') || 'null');
+    if (token && user) {
+      redirect(user.role);
+    }
+  })();
+
+  function redirect(role) {
+    window.location.href = role === 'teacher' ? '/teacher.html' : '/student.html';
+  }
+
+  // ── Tab switch ────────────────────────────────────────────────
+  function switchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('signupForm').style.display = isLogin ? 'none' : 'block';
+    document.querySelectorAll('.auth-tab').forEach((t, i) => {
+      t.classList.toggle('active', isLogin ? i === 0 : i === 1);
+    });
+    hideAlert();
+  }
+
+  // ── Role selection ────────────────────────────────────────────
+  function selectRole(role) {
+    document.getElementById('selectedRole').value = role;
+    document.getElementById('roleStudent').classList.toggle('selected', role === 'student');
+    document.getElementById('roleTeacher').classList.toggle('selected', role === 'teacher');
+  }
+
+  // ── Alert ─────────────────────────────────────────────────────
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type} show`;
+    el.innerHTML = `${type === 'error' ? '⚠️' : '✅'} ${msg}`;
+  }
+  function hideAlert() {
+    const el = document.getElementById('alertBox');
+    el.classList.remove('show');
+  }
+
+  // ── Set loading state ─────────────────────────────────────────
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  // ── Login ─────────────────────────────────────────────────────
+  async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    hideAlert();
+
+    if (!email || !password) { showAlert('Please fill in all fields'); return; }
+
+    setLoading('loginBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('qf_token', data.token);
+        localStorage.setItem('qf_user', JSON.stringify(data.user));
+        showAlert('Login successful! Redirecting...', 'success');
+        setTimeout(() => redirect(data.user.role), 800);
+      } else {
+        showAlert(data.message || 'Login failed');
+      }
+    } catch (e) {
+      showAlert('Network error. Is the server running?');
+    } finally {
+      setLoading('loginBtn', false);
+    }
+  }
+
+  // ── Signup ────────────────────────────────────────────────────
+  async function handleSignup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const role = document.getElementById('selectedRole').value;
+    hideAlert();
+
+    if (!name || !email || !password) { showAlert('Please fill in all fields'); return; }
+    if (password.length < 6) { showAlert('Password must be at least 6 characters'); return; }
+
+    setLoading('signupBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem('qf_token', data.token);
+        localStorage.setItem('qf_user', JSON.stringify(data.user));
+        showAlert('Account created! Redirecting...', 'success');
+        setTimeout(() => redirect(data.user.role), 800);
+      } else {
+        const msg = data.errors ? data.errors[0].msg : data.message;
+        showAlert(msg || 'Signup failed');
+      }
+    } catch (e) {
+      showAlert('Network error. Is the server running?');
+    } finally {
+      setLoading('signupBtn', false);
+    }
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const isLogin = document.getElementById('loginForm').style.display !== 'none';
+      isLogin ? handleLogin() : handleSignup();
+    }
+  });
+</script>
+</body>
+</html>
